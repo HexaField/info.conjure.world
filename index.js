@@ -78,42 +78,57 @@ function init() {
         side: THREE.DoubleSide
     } );
 
-    var loader = new THREE.FontLoader();
-    loader.load( 'assets/helvetiker.json', function ( font ) {
+
+    function text(message, font) {
         var xMid, text;
-        var message = "COMING SOON";
         var shapes = font.generateShapes( message, 100 );
         var geometry = new THREE.ShapeBufferGeometry( shapes );
         geometry.computeBoundingBox();
         xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-        geometry.translate( xMid, 250, 0 );
-        text = new THREE.Mesh( geometry, mat1 );
-        scene.add( text );
+        geometry.translate( xMid, 0, 0 );
+        var mesh = new THREE.Mesh( geometry, mat1 );
+        return mesh;
+    }
+
+    var loader = new THREE.FontLoader();
+    loader.load( 'assets/helvetiker.json', function ( font ) {
+
+        var text1 = text("COMING SOON", font)
+        var group1 = new THREE.Group();
+        group1.position.set(0, 250, 0 );
+        group1.add(text1)
+        scene.add( group1 );
+        
+        var text2 = text("Try out the prototype!", font)
+        text2.scale.set(0.25, 0.25, 0.25)
+
+        var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
+        group2.add(text2)
+        group2.position.set(0, -350, 0 );
+        scene.add(group2);
+        objects.push(group2)
     })
 
     var texture = new THREE.TextureLoader().load( 'assets/twitter.png' );
-    var twitter = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { map: texture }));
+    var twitter = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture}));
     scene.add(twitter);
     twitter.userData = {URL: "https://twitter.com/conjureworld"};
     twitter.position.set(-200, -200, 0);
     objects.push(twitter);
 
     var texture = new THREE.TextureLoader().load( 'assets/kofi.png' );
-    var kofi = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, map: texture }));
+    var kofi = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
     scene.add(kofi);
     kofi.userData = {URL: "https://ko-fi.com/joshfield"};
     kofi.position.set(200, -200, 0);
     objects.push(kofi);
 
-    menger =  new THREE.Mesh(
-        createMengerGeometry(2), 
-        
-        new THREE.MeshNormalMaterial()
-    );
+    menger =  new THREE.Mesh(createMengerGeometry(2), new THREE.MeshNormalMaterial());
     menger.position.set(0, 0, 0);
     menger.scale.set(200, 200, 200);
     scene.add(menger);
 }
+
 
 function onWindowResize() {
 
@@ -140,7 +155,7 @@ function animate() {
     menger.rotation.y += 0.002
 
 	raycaster.setFromCamera( mouse, camera );
-	var intersects = raycaster.intersectObjects( objects );
+	var intersects = raycaster.intersectObjects(objects , false);
     
     for(var obj of objects) {
         obj.scale.set(1, 1, 1)
