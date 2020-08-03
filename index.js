@@ -6,8 +6,9 @@ import { FBXLoader } from 'https://unpkg.com/three@0.118.3/examples/jsm/loaders/
 
 var container, stats, controls;
 var camera, scene, renderer, light;
-var menger;
+var mengers, light1, light2, light3, light4;
 var objects = [];
+var mengerDepth, mengersCount;
 
 var clock = new THREE.Clock();
 var mouse = new THREE.Vector2();
@@ -32,24 +33,39 @@ function init() {
 
     scene = new THREE.Scene();
     // scene.background = new THREE.Color( 0xa0a0a0 );
-    // scene.fog = new THREE.FogExp2( 0x000000, 0.001);
+    scene.fog = new THREE.FogExp2( 0x000000, 0.0001);
 
-    var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.61);
-    hemiLight.position.set(0, 50, 0);
-    scene.add(hemiLight);
+    function createSpotlight( color ) {
 
-    var d = 8.25;
-    var dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
-    dirLight.position.set(-8, 12, 8);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
-    dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 1500;
-    dirLight.shadow.camera.left = d * -1;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = d * -1;
-    scene.add(dirLight);
+        var newObj = new THREE.SpotLight( color, 2 );
+
+        newObj.castShadow = true;
+        newObj.angle = 1;
+        newObj.penumbra = 0.4;
+        newObj.decay = 1;
+        newObj.distance = 3000;
+        newObj.target = scene;
+        newObj.intensity = 0.2
+
+        return newObj;
+
+    }
+
+    light1 = createSpotlight( 0xff0040 );
+    scene.add( light1 );
+
+    light2 = createSpotlight( 0x0040ff);
+    scene.add( light2 );
+
+    light3 = createSpotlight( 0x80ff80 );
+    scene.add( light3 );
+
+    light4 = createSpotlight( 0xffaa00 );
+    scene.add( light4 );
+
+    light = new THREE.PointLight( 0x1855A3, 2, 5000 );
+    light.position.set(0, 0, 1000)
+    scene.add( light );
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -73,7 +89,7 @@ function init() {
     var colour1 = new THREE.Color(0x2685ff)
     var colour2 = new THREE.Color(0x1E6ACC)
     var colour3 = new THREE.Color(0x1855A3)
-    var mat1 = new THREE.MeshBasicMaterial( {
+    var mat1 = new THREE.MeshPhysicalMaterial( {
         color: colour1,
         side: THREE.DoubleSide
     } );
@@ -81,12 +97,21 @@ function init() {
 
     function text(message, font) {
         var xMid, text;
-        var shapes = font.generateShapes( message, 100 );
-        var geometry = new THREE.ShapeBufferGeometry( shapes );
+        var geometry = new THREE.TextBufferGeometry( message, {
+            font: font,
+            size: 80,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 10,
+            bevelSize: 0.1,
+            bevelOffset: 0,
+            bevelSegments: 5
+        } );
         geometry.computeBoundingBox();
         xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
         geometry.translate( xMid, 0, 0 );
-        var mesh = new THREE.Mesh( geometry, mat1 );
+        var mesh = new THREE.Mesh( geometry, new THREE.MeshPhysicalMaterial( { color: 0xffffff} ));
         return mesh;
     }
 
@@ -101,10 +126,11 @@ function init() {
         
         var text2 = text("Try out the prototype!", font)
         text2.scale.set(0.25, 0.25, 0.25)
-
+        
         var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group2.add(text2)
         group2.position.set(0, -350, 0 );
+        group2.userData = {URL: "https://conjure.world"};
         scene.add(group2);
         objects.push(group2)
     })
@@ -123,10 +149,34 @@ function init() {
     kofi.position.set(200, -200, 0);
     objects.push(kofi);
 
-    menger =  new THREE.Mesh(createMengerGeometry(2), new THREE.MeshNormalMaterial());
-    menger.position.set(0, 0, 0);
-    menger.scale.set(200, 200, 200);
-    scene.add(menger);
+    mengerDepth = 0;
+    mengers = [];
+    mengersCount = 3;
+    var mengerMat = new THREE.MeshPhysicalMaterial( {
+        color: 0xffffff,
+        metalness: 0.5,
+        roughness: 0.5,
+        clearcoat: 1,
+        clearcoatRoughness: 0.2,
+        reflectivity: 0
+    } );
+    var cube = new THREE.Mesh(new THREE.BoxBufferGeometry(200,200,200), mengerMat)
+    cube.visible = false;
+    scene.add(cube);
+    mengers.push(cube);
+    // objects.push(cube);
+    for(var i = 0; i < mengersCount; i ++)
+    {
+        var mengerMesh = new THREE.Mesh(createMengerGeometry(i), mengerMat)
+        mengerMesh.scale.set(200, 200, 200);
+        var menger = new THREE.Group()
+        menger.add(mengerMesh)
+        menger.visible = false;
+        scene.add(menger);
+        mengers.push(menger);
+        // objects.push(menger);
+    } 
+    mengers[mengerDepth].visible = true;
 }
 
 
@@ -149,10 +199,31 @@ function animate() {
 
     requestAnimationFrame( animate );
 
+    var time = Date.now() * 0.0005;
     var delta = clock.getDelta();
 
-    menger.rotation.x += 0.002
-    menger.rotation.y += 0.002
+
+    for(var menger of mengers)
+    {
+        menger.rotation.x += 0.002
+        menger.rotation.y += 0.002
+    }
+
+    light1.position.x = Math.sin( time * 0.7 ) * -1000;
+    light1.position.y = Math.cos( time * 0.5 ) * 1000;
+    light1.position.z = Math.cos( time * 0.3 ) * 1000;
+
+    light2.position.x = Math.cos( time * 0.3 ) * 1000;
+    light2.position.y = Math.sin( time * 0.5 ) * 1000;
+    light2.position.z = Math.sin( time * 0.7 ) * -1000;
+
+    light3.position.x = Math.sin( time * 0.7 ) * -1000;
+    light3.position.y = Math.cos( time * 0.3 ) * 1000;
+    light3.position.z = Math.sin( time * 0.5 ) * 1000;
+
+    light4.position.x = Math.sin( time * 0.3 ) * 1000;
+    light4.position.y = Math.cos( time * 0.7 ) * -1000;
+    light4.position.z = Math.sin( time * 0.5 ) * -1000;
 
 	raycaster.setFromCamera( mouse, camera );
 	var intersects = raycaster.intersectObjects(objects , false);
@@ -163,7 +234,6 @@ function animate() {
     if (intersects.length > 0) {
         intersects[0].object.scale.set(1.2, 1.2, 1.2);
     }
-
     renderer.render( scene, camera );
 
 }
@@ -183,7 +253,21 @@ function onMouseMove( event ) {
 function onMouseDown(event) {
     var intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
-        window.open(intersects[0].object.userData.URL);
+        if(intersects[0].object.userData.URL)
+            window.open(intersects[0].object.userData.URL);
+    }
+	intersects = raycaster.intersectObjects(mengers, true);
+    if (intersects.length > 0)
+    {
+        console.log(mengerDepth)
+        console.log(mengers[mengerDepth])
+        mengers[mengerDepth].visible = false;
+        mengerDepth++;
+        if(mengerDepth >= mengers.length) 
+        {
+            mengerDepth = 0;
+        }
+        mengers[mengerDepth].visible = true;
     }
 }
 
