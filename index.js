@@ -120,7 +120,7 @@ function init() {
 
         var text1 = text("COMING SOON", font)
         var group1 = new THREE.Group();
-        group1.position.set(0, 250, 0 );
+        group1.position.set(0, 300, 0 );
         group1.add(text1)
         scene.add( group1 );
         
@@ -129,7 +129,7 @@ function init() {
         
         var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group2.add(text2)
-        group2.position.set(0, -350, 0 );
+        group2.position.set(0, -450, 0 );
         group2.userData = {URL: "https://conjure.world"};
         scene.add(group2);
         objects.push(group2)
@@ -139,14 +139,21 @@ function init() {
     var twitter = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture}));
     scene.add(twitter);
     twitter.userData = {URL: "https://twitter.com/conjureworld"};
-    twitter.position.set(-200, -200, 0);
+    twitter.position.set(-350, -300, 0);
     objects.push(twitter);
+
+    var texture = new THREE.TextureLoader().load( 'assets/yt.png' );
+    var yt = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
+    scene.add(yt);
+    yt.userData = {URL: "https://www.youtube.com/channel/UCZ-gYU_8R-EEFzVY09UyVDQ"};
+    yt.position.set(0, -300, 0);
+    objects.push(yt);
 
     var texture = new THREE.TextureLoader().load( 'assets/kofi.png' );
     var kofi = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
     scene.add(kofi);
     kofi.userData = {URL: "https://ko-fi.com/joshfield"};
-    kofi.position.set(200, -200, 0);
+    kofi.position.set(350, -300, 0);
     objects.push(kofi);
 
     mengerDepth = 0;
