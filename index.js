@@ -141,7 +141,7 @@ function init() {
         var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group3.add(text3);
         group3.position.set(0, -525, 0 );
-        group3.userData = {URL: "https://conjure.world"};
+        group3.userData = {URL: "https://devpost.com/software/conjure-ujk4al"};
         scene.add(group3);
         objects.push(group3);
     })
