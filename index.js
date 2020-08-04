@@ -16,7 +16,7 @@ var raycaster = new THREE.Raycaster();
 
 init();
 document.addEventListener('mousedown', onMouseDown, false);
-document.addEventListener('touchend', onMouseDown, false);
+document.addEventListener('touchend', onTouchEnd, false);
 document.addEventListener('mousemove', onMouseMove, false);
 animate();
 
@@ -248,20 +248,23 @@ function animate() {
 
 
 function onMouseMove( event ) {
-
-	// calculate mouse position in normalized device coordinates
-	// (-1 to +1) for both components
-
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
 }
 
+function onTouchEnd(event) {
+	mouse.x = ( e.touches[0].clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( e.touches[0].clientY / window.innerHeight ) * 2 + 1;
+    intersects();
+}
 
 function onMouseDown(event) {
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-	raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera( mouse, camera );
+    intersects();
+}
+function intersects() {
     var intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
         if(intersects[0].object.userData.URL)
