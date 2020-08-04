@@ -119,21 +119,31 @@ function init() {
     var loader = new THREE.FontLoader();
     loader.load( 'assets/helvetiker.json', function ( font ) {
 
-        var text1 = text("COMING SOON", font)
+        var text1 = text("COMING SOON", font);
         var group1 = new THREE.Group();
         group1.position.set(0, 300, 0 );
-        group1.add(text1)
+        group1.add(text1);
         scene.add( group1 );
         
-        var text2 = text("Try out the prototype!", font)
-        text2.scale.set(0.25, 0.25, 0.25)
+        var text2 = text("Try out the prototype!", font);
+        text2.scale.set(0.25, 0.25, 0.25);
         
         var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group2.add(text2)
         group2.position.set(0, -450, 0 );
         group2.userData = {URL: "https://conjure.world"};
         scene.add(group2);
-        objects.push(group2)
+        objects.push(group2);
+
+        var text3 = text("Learn more!", font);
+        text3.scale.set(0.25, 0.25, 0.25);
+        
+        var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
+        group3.add(text3);
+        group3.position.set(0, -525, 0 );
+        group3.userData = {URL: "https://conjure.world"};
+        scene.add(group3);
+        objects.push(group3);
     })
 
     var texture = new THREE.TextureLoader().load( 'assets/twitter.png' );
