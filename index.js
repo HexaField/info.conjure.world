@@ -263,8 +263,8 @@ function onMouseMove( event ) {
 }
 
 function onTouchEnd(event) {
-	mouse.x = ( e.touches[0].clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( e.touches[0].clientY / window.innerHeight ) * 2 + 1;
+	mouse.x = ( event.touches[0].clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.touches[0].clientY / window.innerHeight ) * 2 + 1;
     intersects();
 }
 
