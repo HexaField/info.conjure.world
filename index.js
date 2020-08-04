@@ -259,6 +259,9 @@ function onMouseMove( event ) {
 
 
 function onMouseDown(event) {
+	raycaster.setFromCamera( mouse, camera );
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     var intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
         if(intersects[0].object.userData.URL)
