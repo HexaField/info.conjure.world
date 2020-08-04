@@ -261,10 +261,10 @@ function onTouchEnd(event) {
 function onMouseDown(event) {
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    raycaster.setFromCamera( mouse, camera );
     intersects();
 }
 function intersects() {
+    raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects(objects);
     if (intersects.length > 0) {
         if(intersects[0].object.userData.URL)
