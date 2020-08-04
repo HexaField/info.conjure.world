@@ -16,6 +16,7 @@ var raycaster = new THREE.Raycaster();
 
 init();
 document.addEventListener('mousedown', onMouseDown, false);
+document.addEventListener('touchend', onMouseDown, false);
 document.addEventListener('mousemove', onMouseMove, false);
 animate();
 
