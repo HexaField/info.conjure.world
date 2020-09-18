@@ -1,10 +1,10 @@
 
 import * as THREE from 'three';
-
-import ThreeMarkdownText from './three-markdown-text';
+import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import articleHTML from './AVoyagetoDigitalCollaborativeSpaces.js'
 
 var container, stats;
-var camera, scene, renderer, light;
+var camera, scene, scene2, renderer, renderer2, light;
 var mengers, light1, light2, light3, light4;
 var objects = [];
 var mengerDepth, mengersCount;
@@ -33,9 +33,18 @@ function init() {
     camera.position.set( 0, 0, 1000 );
 
     scene = new THREE.Scene();
+    scene2 = new THREE.Scene();
     // scene.background = new THREE.Color( 0xa0a0a0 );
-    scene.fog = new THREE.FogExp2( 0x000000, 0.0001);
+    // scene.fog = new THREE.FogExp2( 0x000000, 0.0001);
     page1()
+    let articleElement = document.createElement('div')
+    // articleElement.textContent = articleHTML
+    articleElement.innerHTML = articleHTML
+    articleElement.style.width = '50%'
+    let article = new CSS3DObject(articleElement)
+    article.scale.set(2,2,2)
+    article.position.setY(-4200)
+    scene2.add(article)
 }
 
 var lastY = 0;
@@ -50,13 +59,12 @@ function touchMove(event) {
 }
 
 function onMouseWheel( event ) {
-    console.log(event.deltaY)
     camera.position.y -= event.deltaY;
 
     if(camera.position.y >= 0)
         camera.position.y = 0
-    if(camera.position.y <= -1000)
-        camera.position.y = -1000
+    if(camera.position.y <= -10000)
+        camera.position.y = -10000
 }
 
 function onWindowResize() {
@@ -109,6 +117,7 @@ function animate() {
         intersects[0].object.scale.set(1.2, 1.2, 1.2);
     }
     renderer.render( scene, camera );
+    renderer2.render( scene2, camera );
 
 }
 
@@ -212,7 +221,7 @@ function page1() {
     light.position.set(0, 0, 1000)
     scene.add( light );
 
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new THREE.WebGLRenderer( { alpha: true, antialias: true });
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setClearColor( 0x000000, 0.0);
@@ -224,6 +233,12 @@ function page1() {
     renderer.domElement.style.left = 0;
     renderer.domElement.style.zIndex = -1; // required
     container.appendChild( renderer.domElement );
+
+    renderer2 = new CSS3DRenderer( { antialias: true });
+    renderer2.setSize( window.innerWidth, window.innerHeight );
+    renderer2.domElement.style.position = 'absolute';
+    renderer2.domElement.style.top = 0;
+    container.appendChild( renderer2.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
 
