@@ -44,7 +44,7 @@ function init() {
     let article = new CSS3DObject(articleElement)
     article.scale.set(2,2,2)
     article.position.setY(-4200)
-    scene2.add(article)
+    // scene2.add(article)
 }
 
 var lastY = 0;
