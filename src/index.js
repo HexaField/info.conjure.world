@@ -29,12 +29,8 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 100000 );
-    camera.position.set( 0, 0, 2000 );
-    // camera.lookAt(0,0,0)
-    camera.fov = 80;
-    camera.near = 0.1;
-    camera.far = 2000; 
+    camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 100000 );
+    camera.position.set( 0, 0, 1000 );
 
     scene = new THREE.Scene();
     // scene.background = new THREE.Color( 0xa0a0a0 );
@@ -65,15 +61,11 @@ function onMouseWheel( event ) {
 
 function onWindowResize() {
 
-    renderer.domElement.width  = window.innerWidth;
-    renderer.domElement.height = window.innerHeight;
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height= '100%';
-
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.render( scene, camera );
 }
 
 //
