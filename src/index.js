@@ -1,23 +1,27 @@
 
-import * as THREE from 'https://unpkg.com/three@0.118.3/build/three.module.js';
+import * as THREE from 'three';
 
-import { OrbitControls } from 'https://unpkg.com/three@0.118.3/examples/jsm/controls/OrbitControls.js';
-import { FBXLoader } from 'https://unpkg.com/three@0.118.3/examples/jsm/loaders/FBXLoader.js';
+import ThreeMarkdownText from './three-markdown-text';
 
-var container, stats, controls;
+var container, stats;
 var camera, scene, renderer, light;
 var mengers, light1, light2, light3, light4;
 var objects = [];
 var mengerDepth, mengersCount;
+var camVelocityY = 0;
+var camVelocityMax = 50;
 
 var clock = new THREE.Clock();
 var mouse = new THREE.Vector2();
 var raycaster = new THREE.Raycaster();
 
 init();
-document.addEventListener('mousedown', onMouseDown, false);
-document.addEventListener('touchend', onTouchEnd, false);
-document.addEventListener('mousemove', onMouseMove, false);
+window.addEventListener('mousedown', onMouseDown, false);
+window.addEventListener('touchend', onTouchEnd, false);
+window.addEventListener('mousemove', onMouseMove, false);
+window.addEventListener('wheel', onMouseWheel );
+window.addEventListener("touchstart", touchStart, false);
+window.addEventListener("touchmove", touchMove, false);
 animate();
 
 function init() {
@@ -35,7 +39,155 @@ function init() {
     scene = new THREE.Scene();
     // scene.background = new THREE.Color( 0xa0a0a0 );
     scene.fog = new THREE.FogExp2( 0x000000, 0.0001);
+    page1()
+}
 
+var lastY = 0;
+
+function touchStart(event) {
+  lastY = event.touches[0].pageY
+}
+
+function touchMove(event) {
+    onMouseWheel({ deltaY: lastY - event.touches[0].pageY })
+    lastY = event.touches[0].pageY
+}
+
+function onMouseWheel( event ) {
+    console.log(event.deltaY)
+    camera.position.y -= event.deltaY;
+
+    if(camera.position.y >= 0)
+        camera.position.y = 0
+    if(camera.position.y <= -1000)
+        camera.position.y = -1000
+}
+
+function onWindowResize() {
+
+    renderer.domElement.width  = window.innerWidth;
+    renderer.domElement.height = window.innerHeight;
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height= '100%';
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+//
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    var time = Date.now() * 0.0005;
+    var delta = clock.getDelta();
+
+    for(var menger of mengers)
+    {
+        menger.rotation.x += 0.002
+        menger.rotation.y += 0.002
+    }
+
+    light1.position.x = Math.sin( time * 0.7 ) * -1000;
+    light1.position.y = Math.cos( time * 0.5 ) * 1000;
+    light1.position.z = Math.cos( time * 0.3 ) * 1000;
+
+    light2.position.x = Math.cos( time * 0.3 ) * 1000;
+    light2.position.y = Math.sin( time * 0.5 ) * 1000;
+    light2.position.z = Math.sin( time * 0.7 ) * -1000;
+
+    light3.position.x = Math.sin( time * 0.7 ) * -1000;
+    light3.position.y = Math.cos( time * 0.3 ) * 1000;
+    light3.position.z = Math.sin( time * 0.5 ) * 1000;
+
+    light4.position.x = Math.sin( time * 0.3 ) * 1000;
+    light4.position.y = Math.cos( time * 0.7 ) * -1000;
+    light4.position.z = Math.sin( time * 0.5 ) * -1000;
+
+	raycaster.setFromCamera( mouse, camera );
+	var intersects = raycaster.intersectObjects(objects , false);
+    
+    for(var obj of objects) {
+        obj.scale.set(1, 1, 1)
+    }
+    if (intersects.length > 0) {
+        intersects[0].object.scale.set(1.2, 1.2, 1.2);
+    }
+    renderer.render( scene, camera );
+
+}
+
+
+function onMouseMove( event ) {
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+function onTouchEnd(event) {
+	mouse.x = ( event.changedTouches[0].clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.changedTouches[0].clientY / window.innerHeight ) * 2 + 1;
+    intersects();
+}
+
+function onMouseDown(event) {
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    intersects();
+}
+function intersects() {
+    raycaster.setFromCamera( mouse, camera );
+    var intersects = raycaster.intersectObjects(objects);
+    if (intersects.length > 0) {
+        if(intersects[0].object.userData.URL)
+            window.open(intersects[0].object.userData.URL);
+    }
+	intersects = raycaster.intersectObjects(mengers, true);
+    if (intersects.length > 0)
+    {
+        mengers[mengerDepth].visible = false;
+        mengerDepth++;
+        if(mengerDepth >= mengers.length) 
+        {
+            mengerDepth = 0;
+        }
+        mengers[mengerDepth].visible = true;
+    }
+}
+
+
+function createSingleMenger(iteration, totalIterations)
+{
+    var geometry = new THREE.Geometry();
+    for(var x = -1; x <= 1; x++) {
+        for(var y = -1; y <= 1; y++) {
+            for(var z = -1; z <= 1; z++) {
+                if((!x && !y) || (!y && !z) || (!x && !z)) {
+                    continue;
+                }
+                else {
+                    var cube = new THREE.Mesh(iteration ? createSingleMenger(iteration - 1, totalIterations) : new THREE.BoxGeometry());
+                    cube.scale.set(1/3, 1/3, 1/3);
+                    cube.position.set(x/3, y/3, z/3);
+                    cube.updateMatrix();
+                    geometry.mergeMesh(cube);
+                }
+            }
+        }    
+    }
+    return geometry;
+}
+
+function createMengerGeometry(iterations)
+{
+    var bufferGeometry = new THREE.BufferGeometry();
+    bufferGeometry.fromGeometry(createSingleMenger(iterations, iterations));
+    return bufferGeometry;
+}
+
+function page1() {
     function createSpotlight( color ) {
 
         var newObj = new THREE.SpotLight( color, 2 );
@@ -81,10 +233,6 @@ function init() {
     renderer.domElement.style.zIndex = -1; // required
     container.appendChild( renderer.domElement );
 
-    controls = new OrbitControls( camera, renderer.domElement );
-    controls.target.set( 0, 0, 0 );
-    controls.update();
-
     window.addEventListener( 'resize', onWindowResize, false );
 
     var colour1 = new THREE.Color(0x2685ff)
@@ -102,12 +250,6 @@ function init() {
             font: font,
             size: 80,
             height: 5,
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 10,
-            bevelSize: 0.1,
-            bevelOffset: 0,
-            bevelSegments: 5
         } );
         geometry.computeBoundingBox();
         xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
@@ -119,14 +261,14 @@ function init() {
     var loader = new THREE.FontLoader();
     loader.load( 'assets/helvetiker.json', function ( font ) {
 
-        var text1 = text("COMING SOON", font);
+        var text1 = text("PROJECT CONJURE", font);
         var group1 = new THREE.Group();
         group1.position.set(0, 300, 0 );
         group1.add(text1);
         scene.add( group1 );
         
         var text2 = text("Try out the prototype!", font);
-        text2.scale.set(0.25, 0.25, 0.25);
+        text2.scale.set(0.4, 0.4, 0.4);
         
         var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group2.add(text2)
@@ -135,8 +277,8 @@ function init() {
         scene.add(group2);
         objects.push(group2);
 
-        var text3 = text("Learn more!", font);
-        text3.scale.set(0.25, 0.25, 0.25);
+        var text3 = text("Scroll down to read about Conjure", font);
+        text3.scale.set(0.4, 0.4, 0.4);
         
         var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group3.add(text3);
@@ -195,133 +337,4 @@ function init() {
         // objects.push(menger);
     } 
     mengers[mengerDepth].visible = true;
-}
-
-
-function onWindowResize() {
-
-    renderer.domElement.width  = window.innerWidth;
-    renderer.domElement.height = window.innerHeight;
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height= '100%';
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-//
-
-function animate() {
-
-    requestAnimationFrame( animate );
-
-    var time = Date.now() * 0.0005;
-    var delta = clock.getDelta();
-
-
-    for(var menger of mengers)
-    {
-        menger.rotation.x += 0.002
-        menger.rotation.y += 0.002
-    }
-
-    light1.position.x = Math.sin( time * 0.7 ) * -1000;
-    light1.position.y = Math.cos( time * 0.5 ) * 1000;
-    light1.position.z = Math.cos( time * 0.3 ) * 1000;
-
-    light2.position.x = Math.cos( time * 0.3 ) * 1000;
-    light2.position.y = Math.sin( time * 0.5 ) * 1000;
-    light2.position.z = Math.sin( time * 0.7 ) * -1000;
-
-    light3.position.x = Math.sin( time * 0.7 ) * -1000;
-    light3.position.y = Math.cos( time * 0.3 ) * 1000;
-    light3.position.z = Math.sin( time * 0.5 ) * 1000;
-
-    light4.position.x = Math.sin( time * 0.3 ) * 1000;
-    light4.position.y = Math.cos( time * 0.7 ) * -1000;
-    light4.position.z = Math.sin( time * 0.5 ) * -1000;
-
-	raycaster.setFromCamera( mouse, camera );
-	var intersects = raycaster.intersectObjects(objects , false);
-    
-    for(var obj of objects) {
-        obj.scale.set(1, 1, 1)
-    }
-    if (intersects.length > 0) {
-        intersects[0].object.scale.set(1.2, 1.2, 1.2);
-    }
-    renderer.render( scene, camera );
-
-}
-
-
-function onMouseMove( event ) {
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-}
-
-function onTouchEnd(event) {
-    console.log(event)
-	mouse.x = ( event.changedTouches[0].clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.changedTouches[0].clientY / window.innerHeight ) * 2 + 1;
-    intersects();
-}
-
-function onMouseDown(event) {
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    intersects();
-}
-function intersects() {
-    raycaster.setFromCamera( mouse, camera );
-    var intersects = raycaster.intersectObjects(objects);
-    if (intersects.length > 0) {
-        if(intersects[0].object.userData.URL)
-            window.open(intersects[0].object.userData.URL);
-    }
-	intersects = raycaster.intersectObjects(mengers, true);
-    if (intersects.length > 0)
-    {
-        console.log(mengerDepth)
-        console.log(mengers[mengerDepth])
-        mengers[mengerDepth].visible = false;
-        mengerDepth++;
-        if(mengerDepth >= mengers.length) 
-        {
-            mengerDepth = 0;
-        }
-        mengers[mengerDepth].visible = true;
-    }
-}
-
-
-function createSingleMenger(iteration, totalIterations)
-{
-    var geometry = new THREE.Geometry();
-    for(var x = -1; x <= 1; x++) {
-        for(var y = -1; y <= 1; y++) {
-            for(var z = -1; z <= 1; z++) {
-                if((!x && !y) || (!y && !z) || (!x && !z)) {
-                    continue;
-                }
-                else {
-                    var cube = new THREE.Mesh(iteration ? createSingleMenger(iteration - 1, totalIterations) : new THREE.BoxGeometry());
-                    cube.scale.set(1/3, 1/3, 1/3);
-                    cube.position.set(x/3, y/3, z/3);
-                    cube.updateMatrix();
-                    geometry.mergeMesh(cube);
-                }
-            }
-        }    
-    }
-    return geometry;
-}
-
-function createMengerGeometry(iterations)
-{
-    var bufferGeometry = new THREE.BufferGeometry();
-    bufferGeometry.fromGeometry(createSingleMenger(iterations, iterations));
-    return bufferGeometry;
 }
