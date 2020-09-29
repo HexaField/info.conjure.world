@@ -17,7 +17,6 @@ module.exports = {
         use: ['babel-loader'],
       }]  
     },
-    devtool: 'inline-source-map',
     devServer: {
       open: true,
       port: 9237,

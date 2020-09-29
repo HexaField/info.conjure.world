@@ -1,10 +1,9 @@
 
 import * as THREE from 'three';
-import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
-import articleHTML from './AVoyagetoDigitalCollaborativeSpaces.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-var container, stats;
-var camera, scene, scene2, renderer, renderer2, light;
+var container, stats, controls;
+var camera, scene, renderer, light;
 var mengers, light1, light2, light3, light4;
 var objects = [];
 var mengerDepth, mengersCount;
@@ -16,12 +15,10 @@ var mouse = new THREE.Vector2();
 var raycaster = new THREE.Raycaster();
 
 init();
-window.addEventListener('mousedown', onMouseDown, false);
+window.addEventListener('pointerdown', onMouseDown, false);
 window.addEventListener('touchend', onTouchEnd, false);
-window.addEventListener('mousemove', onMouseMove, false);
-window.addEventListener('wheel', onMouseWheel );
-window.addEventListener("touchstart", touchStart, false);
-window.addEventListener("touchmove", touchMove, false);
+window.addEventListener('pointermove', onMouseMove, false);
+page1()
 animate();
 
 function init() {
@@ -33,39 +30,29 @@ function init() {
     camera.position.set( 0, 0, 1000 );
 
     scene = new THREE.Scene();
-    scene2 = new THREE.Scene();
     // scene.background = new THREE.Color( 0xa0a0a0 );
-    // scene.fog = new THREE.FogExp2( 0x000000, 0.0001);
-    page1()
-    let articleElement = document.createElement('div')
-    // articleElement.textContent = articleHTML
-    articleElement.innerHTML = articleHTML
-    articleElement.style.width = '50%'
-    let article = new CSS3DObject(articleElement)
-    article.scale.set(2,2,2)
-    article.position.setY(-4200)
-    // scene2.add(article)
+    // scene.fog = new THREE.FogExp2( 0x000000, 0.0001);\
 }
 
-var lastY = 0;
+// var lastY = 0;
 
-function touchStart(event) {
-  lastY = event.touches[0].pageY
-}
+// function touchStart(event) {
+//   lastY = event.touches[0].pageY
+// }
 
-function touchMove(event) {
-    onMouseWheel({ deltaY: lastY - event.touches[0].pageY })
-    lastY = event.touches[0].pageY
-}
+// function touchMove(event) {
+//     onMouseWheel({ deltaY: lastY - event.touches[0].pageY })
+//     lastY = event.touches[0].pageY
+// }
 
-function onMouseWheel( event ) {
-    camera.position.y -= event.deltaY;
+// function onMouseWheel( event ) {
+//     // camera.position.y -= event.deltaY;
 
-    if(camera.position.y >= 0)
-        camera.position.y = 0
-    if(camera.position.y <= -10000)
-        camera.position.y = -10000
-}
+//     // if(camera.position.y >= 0)
+//     //     camera.position.y = 0
+//     // if(camera.position.y <= -10000)
+//     //     camera.position.y = -10000
+// }
 
 function onWindowResize() {
 
@@ -85,7 +72,7 @@ function animate() {
     var time = Date.now() * 0.0005;
     var delta = clock.getDelta();
 
-    for(var menger of mengers)
+    for(let menger of mengers)
     {
         menger.rotation.x += 0.002
         menger.rotation.y += 0.002
@@ -117,7 +104,6 @@ function animate() {
         intersects[0].object.scale.set(1.2, 1.2, 1.2);
     }
     renderer.render( scene, camera );
-    renderer2.render( scene2, camera );
 
 }
 
@@ -144,6 +130,9 @@ function intersects() {
     if (intersects.length > 0) {
         if(intersects[0].object.userData.URL)
             window.open(intersects[0].object.userData.URL);
+        setTimeout(() => {
+            controls.reset()
+        }, 200)
     }
 	intersects = raycaster.intersectObjects(mengers, true);
     if (intersects.length > 0)
@@ -234,11 +223,10 @@ function page1() {
     renderer.domElement.style.zIndex = -1; // required
     container.appendChild( renderer.domElement );
 
-    renderer2 = new CSS3DRenderer( { antialias: true });
-    renderer2.setSize( window.innerWidth, window.innerHeight );
-    renderer2.domElement.style.position = 'absolute';
-    renderer2.domElement.style.top = 0;
-    container.appendChild( renderer2.domElement );
+
+    controls = new OrbitControls( camera, renderer.domElement );	
+    controls.target.set( 0, 0, 0 );	
+    controls.update();
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -284,12 +272,12 @@ function page1() {
         scene.add(group2);
         objects.push(group2);
 
-        var text3 = text("Scroll down to read about Conjure", font);
+        var text3 = text("Read about Conjure", font);
         text3.scale.set(0.4, 0.4, 0.4);
         
         var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
         group3.add(text3);
-        group3.position.set(0, -525, 0 );
+        group3.position.set(0, -550, 0 );
         group3.userData = {URL: "https://devpost.com/software/conjure-ujk4al"};
         scene.add(group3);
         objects.push(group3);
@@ -299,22 +287,29 @@ function page1() {
     var twitter = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture}));
     scene.add(twitter);
     twitter.userData = {URL: "https://twitter.com/conjureworld"};
-    twitter.position.set(-350, -300, 0);
+    twitter.position.set(-300, -300, 0);
     objects.push(twitter);
-
+    
     var texture = new THREE.TextureLoader().load( 'assets/yt.png' );
     var yt = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
     scene.add(yt);
     yt.userData = {URL: "https://www.youtube.com/channel/UCZ-gYU_8R-EEFzVY09UyVDQ"};
-    yt.position.set(0, -300, 0);
+    yt.position.set(-100, -300, 0);
     objects.push(yt);
 
     var texture = new THREE.TextureLoader().load( 'assets/kofi.png' );
     var kofi = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
     scene.add(kofi);
     kofi.userData = {URL: "https://ko-fi.com/joshfield"};
-    kofi.position.set(350, -300, 0);
+    kofi.position.set(100, -300, 0);
     objects.push(kofi);
+
+    var texture = new THREE.TextureLoader().load( 'assets/discord.png' );
+    var discord = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture }));
+    scene.add(discord);
+    discord.userData = {URL: "https://discord.gg/ExBxEN2"};
+    discord.position.set(300, -300, 0);
+    objects.push(discord);
 
     mengerDepth = 0;
     mengers = [];
