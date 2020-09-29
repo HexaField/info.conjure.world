@@ -16,7 +16,7 @@ var raycaster = new THREE.Raycaster();
 
 init();
 window.addEventListener('pointerdown', onMouseDown, false);
-window.addEventListener('touchend', onTouchEnd, false);
+// window.addEventListener('touchend', onTouchEnd, false);
 window.addEventListener('pointermove', onMouseMove, false);
 page1()
 animate();
@@ -113,13 +113,14 @@ function onMouseMove( event ) {
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
-function onTouchEnd(event) {
-	mouse.x = ( event.changedTouches[0].clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.changedTouches[0].clientY / window.innerHeight ) * 2 + 1;
-    intersects();
-}
+// function onTouchEnd(event) {
+// 	mouse.x = ( event.changedTouches[0].clientX / window.innerWidth ) * 2 - 1;
+// 	mouse.y = - ( event.changedTouches[0].clientY / window.innerHeight ) * 2 + 1;
+//     intersects();
+// }
 
 function onMouseDown(event) {
+    console.log(event)
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     intersects();
