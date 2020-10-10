@@ -4,11 +4,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 var container, stats, controls;
 var camera, scene, renderer, light;
-var mengers, light1, light2, light3, light4;
+var light1, light2, light3, light4;
+var mengers = [];
 var objects = [];
 var mengerDepth, mengersCount;
 var camVelocityY = 0;
 var camVelocityMax = 50;
+var timer = Date.now();
 
 var clock = new THREE.Clock();
 var mouse = new THREE.Vector2();
@@ -20,6 +22,7 @@ window.addEventListener('pointerdown', onMouseDown, false);
 window.addEventListener('pointermove', onMouseMove, false);
 page1()
 animate();
+makeMengers()
 
 function init() {
 
@@ -149,7 +152,7 @@ function intersects() {
 }
 
 
-function createSingleMenger(iteration, totalIterations)
+async function createSingleMenger(iteration, totalIterations)
 {
     var geometry = new THREE.Geometry();
     for(var x = -1; x <= 1; x++) {
@@ -159,7 +162,7 @@ function createSingleMenger(iteration, totalIterations)
                     continue;
                 }
                 else {
-                    var cube = new THREE.Mesh(iteration ? createSingleMenger(iteration - 1, totalIterations) : new THREE.BoxGeometry());
+                    var cube = new THREE.Mesh(iteration ? await createSingleMenger(iteration - 1, totalIterations) : new THREE.BoxGeometry());
                     cube.scale.set(1/3, 1/3, 1/3);
                     cube.position.set(x/3, y/3, z/3);
                     cube.updateMatrix();
@@ -171,10 +174,10 @@ function createSingleMenger(iteration, totalIterations)
     return geometry;
 }
 
-function createMengerGeometry(iterations)
+async function createMengerGeometry(iterations)
 {
     var bufferGeometry = new THREE.BufferGeometry();
-    bufferGeometry.fromGeometry(createSingleMenger(iterations, iterations));
+    bufferGeometry.fromGeometry(await createSingleMenger(iterations, iterations));
     return bufferGeometry;
 }
 
@@ -239,51 +242,6 @@ function page1() {
         side: THREE.DoubleSide
     } );
 
-
-    function text(message, font) {
-        var xMid, text;
-        var geometry = new THREE.TextBufferGeometry( message, {
-            font: font,
-            size: 80,
-            height: 5,
-        } );
-        geometry.computeBoundingBox();
-        xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-        geometry.translate( xMid, 0, 0 );
-        var mesh = new THREE.Mesh( geometry, new THREE.MeshPhysicalMaterial( { color: 0xffffff} ));
-        return mesh;
-    }
-
-    var loader = new THREE.FontLoader();
-    loader.load( 'assets/helvetiker.json', function ( font ) {
-
-        var text1 = text("PROJECT CONJURE", font);
-        var group1 = new THREE.Group();
-        group1.position.set(0, 300, 0 );
-        group1.add(text1);
-        scene.add( group1 );
-        
-        var text2 = text("Try out the prototype!", font);
-        text2.scale.set(0.4, 0.4, 0.4);
-        
-        var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
-        group2.add(text2)
-        group2.position.set(0, -450, 0 );
-        group2.userData = {URL: "https://conjure.world"};
-        scene.add(group2);
-        objects.push(group2);
-
-        var text3 = text("Read about Conjure", font);
-        text3.scale.set(0.4, 0.4, 0.4);
-        
-        var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
-        group3.add(text3);
-        group3.position.set(0, -550, 0 );
-        group3.userData = {URL: "https://devpost.com/software/conjure-ujk4al"};
-        scene.add(group3);
-        objects.push(group3);
-    })
-
     var texture = new THREE.TextureLoader().load( 'assets/twitter.png' );
     var twitter = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, map: texture}));
     scene.add(twitter);
@@ -312,6 +270,62 @@ function page1() {
     discord.position.set(300, -300, 0);
     objects.push(discord);
 
+    var loader = new THREE.FontLoader();
+    loader.load( 'assets/helvetiker.json', function ( font ) {
+        
+        var text1 = text("PROJECT CONJURE", font);
+        var group1 = new THREE.Group();
+        group1.position.set(0, 300, 0 );
+        group1.add(text1);
+        scene.add( group1 );
+        
+        var text2 = text("Try out the prototype!", font);
+        text2.scale.set(0.4, 0.4, 0.4);
+        
+        var group2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
+        group2.add(text2)
+        group2.position.set(0, -450, 0 );
+        group2.userData = {URL: "https://conjure.world"};
+        scene.add(group2);
+        objects.push(group2);
+
+        var text3 = text("Read about Conjure", font);
+        text3.scale.set(0.4, 0.4, 0.4);
+        
+        var group3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(400, 50), new THREE.MeshBasicMaterial( { transparent:true, side:THREE.DoubleSide, transparent: true, opacity:0}));
+        group3.add(text3);
+        group3.position.set(0, -550, 0 );
+        group3.userData = {URL: "https://medium.com/@joshfield999/designing-digital-collaborative-spaces-ebe6243e3be5"};
+        scene.add(group3);
+        objects.push(group3);
+    })
+
+    renderer.render( scene, camera );
+}
+
+function text(message, font) {
+    var xMid, text;
+    var geometry = new THREE.TextBufferGeometry( message, {
+        font: font,
+        size: 80,
+        height: 5,
+    } );
+    geometry.computeBoundingBox();
+    xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+    geometry.translate( xMid, 0, 0 );
+    var mesh = new THREE.Mesh( geometry, new THREE.MeshPhysicalMaterial( { color: 0xffffff} ));
+
+    return mesh;
+}
+
+
+function time(...args) {
+    console.log(...args, Date.now() - timer)
+    timer = Date.now()
+}
+
+async function makeMengers() {
+
     mengerDepth = 0;
     mengers = [];
     mengersCount = 3;
@@ -328,6 +342,7 @@ function page1() {
     scene.add(cube);
     mengers.push(cube);
     // objects.push(cube);
+
     for(var i = 0; i < mengersCount; i ++)
     {
         var mengerMesh = new THREE.Mesh(createMengerGeometry(i), mengerMat)
@@ -338,6 +353,7 @@ function page1() {
         scene.add(menger);
         mengers.push(menger);
         // objects.push(menger);
+        time('menger', i)
     } 
     mengers[mengerDepth].visible = true;
 }
